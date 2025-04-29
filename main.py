@@ -1,13 +1,134 @@
-from fastapi import FastAPI
+# journal_search_system/main.py
+
+import os
+import shutil
+from datetime import datetime
+from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime
+from sqlalchemy.orm import declarative_base, sessionmaker
+from typing import List
+import pandas as pd
+import re
 
 app = FastAPI()
 
+# Set up templates and static
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# Database setup
+DATABASE_URL = "sqlite:///./journal.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
+# Models
+class Journal(Base):
+    __tablename__ = "journals"
+    id = Column(Integer, primary_key=True, index=True)
+    article_id = Column(String)
+    title = Column(String, nullable=False)
+    author = Column(String)
+    abstract = Column(Text)
+    source_id = Column(String)
+    cum_issue = Column(String)
+    series = Column(String)
+    vol_no = Column(String)
+    page_no = Column(String)
+    search_date = Column(Date)
+    display_date = Column(String)
+    keyword = Column(String)
+    url_link = Column(String)
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+class UploadLog(Base):
+    __tablename__ = "upload_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    upload_time = Column(DateTime, default=datetime.utcnow)
+    title = Column(String)
+    result = Column(String)
+    reason = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+# Utilities
+def parse_date(date_str):
+    formats = ["%Y年%m月%d日", "%d/%m/%Y", "%Y-%m-%d"]
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str.strip(), fmt).date()
+        except:
+            continue
+    return None
+
+# Upload Endpoint
+@app.get("/upload", response_class=HTMLResponse)
+async def upload_page(request: Request):
+    return templates.TemplateResponse("upload.html", {"request": request})
+
+@app.post("/upload")
+async def upload_excel(request: Request, file: UploadFile = File(...)):
+    session = SessionLocal()
+    upload_results = []
+    today_str = datetime.now().strftime("%Y_%m_%d")
+    save_dir = os.path.join("excel", today_str)
+    os.makedirs(save_dir, exist_ok=True)
+    file_path = os.path.join(save_dir, file.filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    df = pd.read_excel(file_path)
+    required_columns = [
+        "ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID", "CUM_ISSUE",
+        "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE", "DISPLAY_DATE", "KEYWORD", "Url_link"
+    ]
+    for col in required_columns:
+        if col not in df.columns:
+            return templates.TemplateResponse("upload.html", {"request": request, "error": f"缺少字段: {col}"})
+
+    for index, row in df.iterrows():
+        title = str(row['TITLE']).strip()
+        if not title or title == 'nan':
+            result = "失败"
+            reason = "标题为空"
+        elif session.query(Journal).filter(Journal.title == title).first():
+            result = "失败"
+            reason = "标题重复"
+        else:
+            try:
+                search_date = parse_date(str(row['SEARCH_DATE']))
+                if not search_date:
+                    raise ValueError("日期格式错误")
+                journal = Journal(
+                    article_id=str(row['ARTICLE_ID']),
+                    title=title,
+                    author=str(row['AUTHOR']),
+                    abstract=str(row['ABSTRACT']),
+                    source_id=str(row['SOURCE_ID']),
+                    cum_issue=str(row['CUM_ISSUE']),
+                    series=str(row['SERIES']),
+                    vol_no=str(row['VOL_NO']),
+                    page_no=str(row['PAGE_NO']),
+                    search_date=search_date,
+                    display_date=str(row['DISPLAY_DATE']),
+                    keyword=str(row['KEYWORD']),
+                    url_link=str(row['Url_link'])
+                )
+                session.add(journal)
+                session.commit()
+                result = "成功"
+                reason = ""
+            except Exception as e:
+                result = "失败"
+                reason = str(e)
+
+        log = UploadLog(title=title, result=result, reason=reason)
+        session.add(log)
+        upload_results.append({"title": title, "result": result, "reason": reason})
+
+    session.commit()
+    session.close()
+    return templates.TemplateResponse("upload.html", {"request": request, "results": upload_results})
