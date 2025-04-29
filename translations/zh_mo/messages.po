@@ -1,0 +1,5 @@
+msgid "搜尋"
+msgstr "搜尋"
+
+msgid "期刊檢索系統"
+msgstr "期刊檢索系統"

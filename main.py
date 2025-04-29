@@ -12,12 +12,16 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from typing import List
 import pandas as pd
 import re
+from models.models import Base, Journal, UploadLog
+from database.database import engine
+from utils.i18n import get_locale, get_translator
+from utils.util import parse_date
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Set up templates and static
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+# Set up static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Database setup
@@ -26,43 +30,22 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Models
-class Journal(Base):
-    __tablename__ = "journals"
-    id = Column(Integer, primary_key=True, index=True)
-    article_id = Column(String)
-    title = Column(String, nullable=False)
-    author = Column(String)
-    abstract = Column(Text)
-    source_id = Column(String)
-    cum_issue = Column(String)
-    series = Column(String)
-    vol_no = Column(String)
-    page_no = Column(String)
-    search_date = Column(Date)
-    display_date = Column(String)
-    keyword = Column(String)
-    url_link = Column(String)
 
-class UploadLog(Base):
-    __tablename__ = "upload_logs"
-    id = Column(Integer, primary_key=True, index=True)
-    upload_time = Column(DateTime, default=datetime.utcnow)
-    title = Column(String)
-    result = Column(String)
-    reason = Column(String)
 
-Base.metadata.create_all(bind=engine)
 
-# Utilities
-def parse_date(date_str):
-    formats = ["%Y年%m月%d日", "%d/%m/%Y", "%Y-%m-%d"]
-    for fmt in formats:
-        try:
-            return datetime.strptime(date_str.strip(), fmt).date()
-        except:
-            continue
-    return None
+app = FastAPI()
+templates = Jinja2Templates(directory="app/templates")
+
+@app.get("/", response_class=HTMLResponse)
+def search_page(request: Request):
+    lang = get_locale(request)
+    translator = get_translator(lang)
+    _ = translator.gettext
+    return templates.TemplateResponse("search.html", {
+        "request": request,
+        "lang": lang,
+        "_": _,
+    })
 
 # Upload Endpoint
 @app.get("/upload", response_class=HTMLResponse)
