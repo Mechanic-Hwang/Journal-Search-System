@@ -28,6 +28,35 @@
         .table-container {
             margin-top: 2rem;
         }
+
+        /* 美化選擇文件框 */
+        .file-name {
+            display: block;
+            background-color: #f5f5f5;
+            color: #4c4c4c;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-name.selected {
+            background-color: #e6ffe6;
+            border-color: #48c774;
+            color: #48c774;
+            font-weight: bold;
+        }
+
+        .file-name.selected::after {
+            content: '✔';
+            margin-left: 0.5rem;
+            color: #48c774;
+        }
+
+        /* 美化選擇按鈕 */
+        .file-input {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -44,8 +73,9 @@
             <label class="file-label">
                 <input class="file-input" type="file" name="file" required id="fileInput">
                 <span class="file-cta">
-                        <span class="file-label">{{ translation['choose_file'] }}</span>
-                    </span>
+                    <span class="file-label">{{ translation['choose_file'] }}</span>
+                </span>
+                <!-- 顯示檔案名稱 -->
                 <span class="file-name" id="fileName">{{ translation['no_file'] }}</span>
             </label>
         </div>
@@ -68,7 +98,7 @@
         <table class="table is-bordered is-striped is-fullwidth">
             <thead>
             <tr>
-                <th>{{ translation['index'] }}</th>  <!-- 新增序號欄 -->
+                <th>{{ translation['index'] }}</th>
                 <th>{{ translation['title'] }}</th>
                 <th>{{ translation['result'] }}</th>
                 <th>{{ translation['reason'] }}</th>
@@ -77,7 +107,7 @@
             <tbody>
             {% for row in results %}
             <tr>
-                <td>{{ loop.index }}</td>  <!-- Jinja2 的 loop.index 提供序號（從 1 開始） -->
+                <td>{{ loop.index }}</td>
                 <td>{{ row.title }}</td>
                 <td>{{ row.result }}</td>
                 <td>{{ row.reason }}</td>
@@ -89,6 +119,29 @@
     {% endif %}
 </div>
 
+<!-- JavaScript for filename display and style change -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("fileInput");
+        const fileNameDisplay = document.getElementById("fileName");
+        const fileBox = document.getElementById("uploadFileBox");
+
+        fileInput.addEventListener("change", function () {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileNameDisplay.textContent = file.name;
+
+                // 將選擇框的樣式變為綠色，並顯示勾選圖示
+                fileNameDisplay.classList.add("selected");
+            } else {
+                fileNameDisplay.textContent = "{{ translation['no_file'] }}";
+
+                // 還原樣式
+                fileNameDisplay.classList.remove("selected");
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
