@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ translation['upload_title'] }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            padding: 2rem;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .upload-box {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+<!-- 語言切換 -->
+<div class="language-selector dropdown is-right" id="langDropdown">
+    <div class="dropdown-trigger">
+        <button class="button is-white" aria-haspopup="true" aria-controls="dropdown-menu">
+            🌐
+        </button>
+    </div>
+    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+            <a href="?lang=zh_mo" class="dropdown-item">繁體中文</a>
+            <a href="?lang=en" class="dropdown-item">English</a>
+            <a href="?lang=pt" class="dropdown-item">Português</a>
+        </div>
+    </div>
+</div>
+
+<div class="upload-box">
+    <h1 class="title has-text-centered">{{ translation['upload_title'] }}</h1>
+
+    <!-- 上傳表單 -->
+    <form action="/upload?lang={{ lang }}" method="post" enctype="multipart/form-data">
+        <div class="file has-name is-fullwidth" id="uploadFileBox">
+            <label class="file-label">
+                <input class="file-input" type="file" name="file" required id="fileInput">
+                <span class="file-cta">
+                        <span class="file-label">{{ translation['choose_file'] }}</span>
+                    </span>
+                <span class="file-name" id="fileName">{{ translation['no_file'] }}</span>
+            </label>
+        </div>
+        <br>
+        <div class="has-text-centered">
+            <button class="button is-link" type="submit">{{ translation['upload_button'] }}</button>
+        </div>
+    </form>
+
+    <!-- 錯誤提示 -->
+    {% if error %}
+    <div class="notification is-danger mt-4">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- 上傳結果 -->
+    {% if results %}
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+            <tr>
+                <th>{{ translation['index'] }}</th>  <!-- 新增序號欄 -->
+                <th>{{ translation['title'] }}</th>
+                <th>{{ translation['result'] }}</th>
+                <th>{{ translation['reason'] }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in results %}
+            <tr>
+                <td>{{ loop.index }}</td>  <!-- Jinja2 的 loop.index 提供序號（從 1 開始） -->
+                <td>{{ row.title }}</td>
+                <td>{{ row.result }}</td>
+                <td>{{ row.reason }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 語言下拉菜單控制 -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 🌐 語言下拉選單控制
+        const dropdown = document.querySelector('.dropdown');
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('is-active');
+        });
+
+        window.addEventListener('click', () => {
+            dropdown.classList.remove('is-active');
+        });
+
+        // 📁 顯示檔案名稱並更新樣式
+        const fileInput = document.getElementById("fileInput");
+        const fileName = document.getElementById("fileName");
+        const uploadBox = document.getElementById("uploadFileBox");
+
+        fileInput.addEventListener("change", function () {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+                uploadBox.classList.add("is-success");
+            } else {
+                fileName.textContent = "{{ translation['no_file'] }}";
+                uploadBox.classList.remove("is-success");
+            }
+        });
+    });
+</script>
+</body>
+</html>

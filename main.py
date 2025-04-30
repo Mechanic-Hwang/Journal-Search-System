@@ -12,11 +12,14 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from typing import List
 import pandas as pd
 import re
+
+from starlette.responses import RedirectResponse
+
 from models.models import Base, Journal, UploadLog
 from database.database import engine
 from translations.dictionary import translations
 from utils.i18n import get_locale, get_translator
-from utils.util import parse_date
+from utils.util import parse_date, safe_str
 
 Base.metadata.create_all(bind=engine)
 
@@ -48,13 +51,22 @@ def search_page(request: Request):
 
 # Upload Endpoint
 @app.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request):
-    return templates.TemplateResponse("upload.html", {"request": request})
+async def upload_page(request: Request, lang: str = "zh_mo"):
+    translation = translations.get(lang, translations["zh_mo"])
+    return templates.TemplateResponse("upload.html", {
+        "request": request,
+        "lang": lang,
+        "translation": translation,
+        "results": []
+    })
+
 
 @app.post("/upload")
-async def upload_excel(request: Request, file: UploadFile = File(...)):
+async def upload_excel(request: Request, file: UploadFile = File(...), lang: str = "zh_mo"):
     session = SessionLocal()
+    translation = translations.get(lang)
     upload_results = []
+
     today_str = datetime.now().strftime("%Y_%m_%d")
     save_dir = os.path.join("excel", today_str)
     os.makedirs(save_dir, exist_ok=True)
@@ -62,49 +74,63 @@ async def upload_excel(request: Request, file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    df = pd.read_excel(file_path)
+    try:
+        df = pd.read_excel(file_path)
+    except Exception as e:
+        return templates.TemplateResponse("upload.html", {
+            "request": request,
+            "translation": translation,
+            "lang": lang,
+            "error": translation['file_error']
+        })
+
     required_columns = [
         "ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID", "CUM_ISSUE",
         "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE", "DISPLAY_DATE", "KEYWORD", "Url_link"
     ]
     for col in required_columns:
         if col not in df.columns:
-            return templates.TemplateResponse("upload.html", {"request": request, "error": f"缺少字段: {col}"})
+            return templates.TemplateResponse("upload.html", {
+                "request": request,
+                "translation": translation,
+                "lang": lang,
+                "error": f"{translation['missing_field']}: {col}"
+            })
 
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         title = str(row['TITLE']).strip()
-        if not title or title == 'nan':
-            result = "失败"
-            reason = "标题为空"
+        if not title or title.lower() == 'nan':
+            result = translation['fail']
+            reason = translation['empty_title']
         elif session.query(Journal).filter(Journal.title == title).first():
-            result = "失败"
-            reason = "标题重复"
+            result = translation['fail']
+            reason = translation['duplicate_title']
         else:
             try:
-                search_date = parse_date(str(row['SEARCH_DATE']))
+                search_date = parse_date(str(row['SEARCH_DATE'])) if not pd.isna(row['SEARCH_DATE']) else None
                 if not search_date:
-                    raise ValueError("日期格式错误")
+                    raise ValueError(translation['date_format_error'])
                 journal = Journal(
-                    article_id=str(row['ARTICLE_ID']),
-                    title=title,
-                    author=str(row['AUTHOR']),
-                    abstract=str(row['ABSTRACT']),
-                    source_id=str(row['SOURCE_ID']),
-                    cum_issue=str(row['CUM_ISSUE']),
-                    series=str(row['SERIES']),
-                    vol_no=str(row['VOL_NO']),
-                    page_no=str(row['PAGE_NO']),
+                    article_id=safe_str(row['ARTICLE_ID']),
+                    title=safe_str(row['TITLE']),
+                    author=safe_str(row['AUTHOR']),
+                    abstract=safe_str(row['ABSTRACT']),
+                    source_id=safe_str(row['SOURCE_ID']),
+                    cum_issue=safe_str(row['CUM_ISSUE']),
+                    series=safe_str(row['SERIES']),
+                    vol_no=safe_str(row['VOL_NO']),
+                    page_no=safe_str(row['PAGE_NO']),
                     search_date=search_date,
-                    display_date=str(row['DISPLAY_DATE']),
-                    keyword=str(row['KEYWORD']),
-                    url_link=str(row['Url_link'])
+                    display_date=safe_str(row['DISPLAY_DATE']),
+                    keyword=safe_str(row['KEYWORD']),
+                    url_link=safe_str(row['Url_link'])
                 )
                 session.add(journal)
                 session.commit()
-                result = "成功"
+                result = translation['success']
                 reason = ""
             except Exception as e:
-                result = "失败"
+                result = translation['fail']
                 reason = str(e)
 
         log = UploadLog(title=title, result=result, reason=reason)
@@ -113,4 +139,81 @@ async def upload_excel(request: Request, file: UploadFile = File(...)):
 
     session.commit()
     session.close()
-    return templates.TemplateResponse("upload.html", {"request": request, "results": upload_results})
+    return templates.TemplateResponse("upload.html", {
+        "request": request,
+        "translation": translation,
+        "lang": lang,
+        "results": upload_results
+    })
+
+
+@app.get("/manual_upload")
+async def manual_upload_form(request: Request, lang: str = "zh_mo"):
+    translation = translations.get(lang)
+    return templates.TemplateResponse("manual_upload.html", {
+        "request": request,
+        "translation": translation,
+        "lang": lang
+    })
+
+
+@app.post("/manual_submit")
+async def manual_submit(
+    request: Request,
+    article_id: str = Form(""),
+    title: str = Form(""),
+    author: str = Form(""),
+    abstract: str = Form(""),
+    source_id: str = Form(""),
+    cum_issue: str = Form(""),
+    series: str = Form(""),
+    vol_no: str = Form(""),
+    page_no: str = Form(""),
+    search_date: str = Form(""),
+    display_date: str = Form(""),
+    keyword: str = Form(""),
+    url_link: str = Form(""),
+    lang: str = Form("zh_mo")
+):
+    session = SessionLocal()
+    error = None
+
+    if not title.strip():
+        error = translations.get(lang)['title_required']
+    else:
+        try:
+            journal = Journal(
+                article_id=article_id.strip() or None,
+                title=title.strip(),
+                author=author.strip() or None,
+                abstract=abstract.strip() or None,
+                source_id=source_id.strip() or None,
+                cum_issue=cum_issue.strip() or None,
+                series=series.strip() or None,
+                vol_no=vol_no.strip() or None,
+                page_no=page_no.strip() or None,
+                search_date=parse_date(search_date.strip()) if search_date.strip() else None,
+                display_date=display_date.strip() or None,
+                keyword=keyword.strip() or None,
+                url_link=url_link.strip() or None
+            )
+            session.add(journal)
+            session.commit()
+
+            log = UploadLog(title=title.strip(), result="成功", reason="手動上傳")
+            session.add(log)
+            session.commit()
+        except Exception as e:
+            error = str(e)
+
+    session.close()
+
+    if error:
+        translation = translations.get(lang)
+        return templates.TemplateResponse("manual_upload.html", {
+            "request": request,
+            "translation": translation,
+            "error": error,
+            "lang": lang
+        })
+    return RedirectResponse(url=f"/manual_upload?lang={lang}", status_code=302)

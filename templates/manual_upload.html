@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ translation['manual_title'] }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .form-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #f8f8f8;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        .language-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="language-container">
+    <div class="dropdown is-hoverable is-right">
+        <div class="dropdown-trigger">
+            <button class="button is-light" aria-haspopup="true" aria-controls="dropdown-menu">
+                🌐
+            </button>
+        </div>
+        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+                <a href="?lang=zh_mo" class="dropdown-item">中文</a>
+                <a href="?lang=en" class="dropdown-item">English</a>
+                <a href="?lang=pt" class="dropdown-item">Português</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-container">
+    <h1 class="title has-text-centered">{{ translation['manual_title'] }}</h1>
+
+    {% if error %}
+    <div class="notification is-danger">{{ error }}</div>
+    {% endif %}
+
+    <form action="/manual_submit" method="post">
+        <input type="hidden" name="lang" value="{{ lang }}">
+        <div class="columns is-multiline">
+        {% set used_fields = [] %}
+        {% for field in ['ARTICLE_ID', 'TITLE', 'AUTHOR', 'ABSTRACT', 'SOURCE_ID', 'CUM_ISSUE', 'SERIES', 'VOL_NO', 'PAGE_NO', 'SEARCH_DATE', 'DISPLAY_DATE', 'KEYWORD', 'Url_link'] %}
+            {% if field not in used_fields %}
+            {% set _ = used_fields.append(field) %}
+            <div class="column is-half">
+                <div class="field">
+                    <label class="label">{{ translation[field] }}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="{{ field }}" placeholder="{{ translation[field] }}">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        </div>
+
+        <div class="has-text-centered mt-4">
+            <button class="button is-primary" type="submit">{{ translation['submit'] }}</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
