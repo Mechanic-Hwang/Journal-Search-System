@@ -3,7 +3,7 @@
 import os
 import shutil
 from datetime import datetime
-from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi import FastAPI, UploadFile, File, Form, Request, Query
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +14,7 @@ import pandas as pd
 import re
 from models.models import Base, Journal, UploadLog
 from database.database import engine
+from translations.dictionary import translations
 from utils.i18n import get_locale, get_translator
 from utils.util import parse_date
 
@@ -29,23 +30,21 @@ DATABASE_URL = "sqlite:///./journal.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-
-
-
-app = FastAPI()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 def search_page(request: Request):
-    lang = get_locale(request)
-    translator = get_translator(lang)
-    _ = translator.gettext
-    return templates.TemplateResponse("search.html", {
-        "request": request,
-        "lang": lang,
-        "_": _,
-    })
+    try:
+        lang = request.query_params.get("lang", "zh_mo")
+        translation = translations.get(lang, translations["zh_mo"])
+        return templates.TemplateResponse("search.html", {
+            "request": request,
+            "lang": lang,
+            "translation": translation,
+        })
+    except Exception as e:
+        print("模板渲染出错：", str(e))
+        raise e
 
 # Upload Endpoint
 @app.get("/upload", response_class=HTMLResponse)

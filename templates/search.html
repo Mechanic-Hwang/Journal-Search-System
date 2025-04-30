@@ -2,50 +2,104 @@
 <html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
-    <title>{{ _("期刊檢索系統") }}</title>
+    <title>{{ translation['search_system'] }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .search-input::placeholder {
+            font-style: italic;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-    <div class="flex flex-col items-center justify-center min-h-screen px-4">
-        <!-- Title -->
-        <h1 class="text-3xl font-bold mb-6">{{ _("期刊檢索系統") }}</h1>
+<body class="bg-gray-50 text-gray-900 relative">
 
-        <!-- Search Box -->
-        <form method="get" action="/search_results" class="w-full max-w-2xl">
-            <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                <input type="text" name="query" placeholder="{{ _('請輸入關鍵字...') }}"
-                       class="w-full px-4 py-2 outline-none">
-                <button type="submit" class="bg-blue-500 text-white px-6 py-2 hover:bg-blue-600">
-                    {{ _("搜尋") }}
+    <!-- Language Dropdown Top-Right -->
+    <div class="absolute top-4 right-4 z-50">
+        <div class="relative inline-block text-left">
+            <button id="langToggle" type="button"
+                    class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    aria-haspopup="true" aria-expanded="false">
+                🌐
+            </button>
+
+            <div id="langMenu" class="hidden origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div class="py-1">
+                    <a href="?lang=zh_mo" class="lang-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">中文</a>
+                    <a href="?lang=en" class="lang-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">English</a>
+                    <a href="?lang=pt" class="lang-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Português</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex flex-col items-center justify-center min-h-screen px-4">
+
+        <!-- Title -->
+        <h1 class="text-4xl font-bold mb-8">{{ translation['search_system'] }}</h1>
+
+        <!-- Search Form -->
+        <form method="get" action="/search_results" class="w-full max-w-2xl space-y-4">
+            <input type="hidden" name="lang" value="{{ lang }}">
+
+            <!-- Search Input -->
+            <div class="flex items-center border border-gray-300 rounded-full overflow-hidden bg-white shadow-sm">
+                <input type="text" name="query"
+                       placeholder="{{ translation['placeholder'] }}"
+                       class="search-input w-full px-6 py-3 text-base md:text-lg outline-none text-gray-800 placeholder-gray-400 {% if lang == 'zh_mo' %}placeholder:text-gray-300{% endif %}">
+                <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-none hover:bg-blue-700">
+                    {{ translation['search_button'] }}
                 </button>
             </div>
 
             <!-- Advanced Search Toggle -->
-            <details class="mt-4 bg-white shadow rounded-lg p-4">
-                <summary class="cursor-pointer text-blue-600">{{ _("高級檢索") }}</summary>
+            <details class="bg-white shadow rounded-lg p-4">
+                <summary class="cursor-pointer text-blue-600 text-sm md:text-base font-semibold">{{ translation['advanced_search'] }}</summary>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     {% for field in ["ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID",
                                      "CUM_ISSUE", "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE",
                                      "DISPLAY_DATE", "KEYWORD"] %}
                         <div>
-                            <label class="block font-semibold mb-1" for="{{ field }}">{{ _(field) }}</label>
+                            <label class="block font-semibold mb-1" for="{{ field }}">{{ field }}</label>
                             <input type="text" name="{{ field }}" id="{{ field }}"
-                                   class="w-full border px-3 py-2 rounded-lg" />
+                                   class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                     {% endfor %}
                 </div>
             </details>
         </form>
 
-        <!-- Language Switcher -->
-        <form method="get" class="mt-6">
-            <label for="lang" class="mr-2">{{ _("選擇語言") }}:</label>
-            <select name="lang" id="lang" onchange="this.form.submit()" class="border p-1 rounded">
-                <option value="zh_TW" {% if lang == "zh_TW" %}selected{% endif %}>繁體中文</option>
-                <option value="en" {% if lang == "en" %}selected{% endif %}>English</option>
-                <option value="pt" {% if lang == "pt" %}selected{% endif %}>Português</option>
-            </select>
-        </form>
     </div>
+
+    <!-- Language Dropdown Script -->
+    <script>
+        const toggle = document.getElementById('langToggle');
+        const menu = document.getElementById('langMenu');
+        const options = document.querySelectorAll('.lang-option');
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('click', () => {
+            menu.classList.add('hidden');
+        });
+
+        menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+
 </body>
 </html>
