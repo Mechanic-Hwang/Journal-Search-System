@@ -23,24 +23,9 @@
         }
     </style>
 </head>
+{% include "top_menu.html" %}
 <body>
 
-<div class="language-container">
-    <div class="dropdown is-hoverable is-right">
-        <div class="dropdown-trigger">
-            <button class="button is-light" aria-haspopup="true" aria-controls="dropdown-menu">
-                🌐
-            </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-            <div class="dropdown-content">
-                <a href="?lang=zh_mo" class="dropdown-item">中文</a>
-                <a href="?lang=en" class="dropdown-item">English</a>
-                <a href="?lang=pt" class="dropdown-item">Português</a>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="form-container">
     <h1 class="title has-text-centered">{{ translation['manual_title'] }}</h1>

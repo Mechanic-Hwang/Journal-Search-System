@@ -1,0 +1,43 @@
+<!-- templates/components/top_menu.html -->
+<div class="top-right-menus">
+    <div class="dropdown is-hoverable is-right">
+        <div class="dropdown-trigger">
+            <button class="button is-light">📄 {{ translation['navigate'] or '跳轉' }}</button>
+        </div>
+        <div class="dropdown-menu">
+            <div class="dropdown-content">
+                <a href="/?lang={{ lang }}" class="dropdown-item">🔍 {{ translation['search_system'] }}</a>
+                <a href="/upload?lang={{ lang }}" class="dropdown-item">📤 {{ translation['upload_title'] }}</a>
+                <a href="/manual_upload?lang={{ lang }}" class="dropdown-item">✍️ {{ translation['manual_title'] }}</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dropdown is-hoverable is-right">
+        <div class="dropdown-trigger">
+            <button class="button is-light">🌐</button>
+        </div>
+        <div class="dropdown-menu">
+            <div class="dropdown-content">
+                <a href="?lang=zh_mo" class="dropdown-item">中文</a>
+                <a href="?lang=en" class="dropdown-item">English</a>
+                <a href="?lang=pt" class="dropdown-item">Português</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.top-right-menus {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    z-index: 1000;
+}
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+</style>

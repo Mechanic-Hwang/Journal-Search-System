@@ -39,7 +39,9 @@ translations = {
         "DISPLAY_DATE": "顯示日期",
         "KEYWORD": "關鍵詞",
         "Url_link": "連結",
-        "title_required": "標題不能為空"
+        "title_required": "標題不能為空",
+        #     top_menu 導航欄和語言切換
+        "navigate": "導航",
     },
     "en": {
         "search_system": "Journal Search System",
@@ -81,7 +83,9 @@ translations = {
         "DISPLAY_DATE": "Display Date",
         "KEYWORD": "Keyword",
         "Url_link": "URL Link",
-        "title_required": "Title cannot be empty"
+        "title_required": "Title cannot be empty",
+        #     top_menu 導航欄和語言切換
+        "navigate": "navigate",
     },
     "pt": {
         "search_system": "Sistema de Busca de Periódicos",
@@ -123,6 +127,8 @@ translations = {
         "DISPLAY_DATE": "Data de Exibição",
         "KEYWORD": "Palavra-chave",
         "Url_link": "Link",
-        "title_required": "O título não pode estar vazio"
+        "title_required": "O título não pode estar vazio",
+        #     top_menu 導航欄和語言切換
+        "navigate": "navegar",
     }
 }

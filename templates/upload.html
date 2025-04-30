@@ -31,21 +31,9 @@
     </style>
 </head>
 <body>
+
 <!-- 語言切換 -->
-<div class="language-selector dropdown is-right" id="langDropdown">
-    <div class="dropdown-trigger">
-        <button class="button is-white" aria-haspopup="true" aria-controls="dropdown-menu">
-            🌐
-        </button>
-    </div>
-    <div class="dropdown-menu" id="dropdown-menu" role="menu">
-        <div class="dropdown-content">
-            <a href="?lang=zh_mo" class="dropdown-item">繁體中文</a>
-            <a href="?lang=en" class="dropdown-item">English</a>
-            <a href="?lang=pt" class="dropdown-item">Português</a>
-        </div>
-    </div>
-</div>
+{% include "top_menu.html" %}
 
 <div class="upload-box">
     <h1 class="title has-text-centered">{{ translation['upload_title'] }}</h1>
@@ -101,37 +89,6 @@
     {% endif %}
 </div>
 
-<!-- 語言下拉菜單控制 -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // 🌐 語言下拉選單控制
-        const dropdown = document.querySelector('.dropdown');
-        const trigger = dropdown.querySelector('.dropdown-trigger');
 
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.classList.toggle('is-active');
-        });
-
-        window.addEventListener('click', () => {
-            dropdown.classList.remove('is-active');
-        });
-
-        // 📁 顯示檔案名稱並更新樣式
-        const fileInput = document.getElementById("fileInput");
-        const fileName = document.getElementById("fileName");
-        const uploadBox = document.getElementById("uploadFileBox");
-
-        fileInput.addEventListener("change", function () {
-            if (fileInput.files.length > 0) {
-                fileName.textContent = fileInput.files[0].name;
-                uploadBox.classList.add("is-success");
-            } else {
-                fileName.textContent = "{{ translation['no_file'] }}";
-                uploadBox.classList.remove("is-success");
-            }
-        });
-    });
-</script>
 </body>
 </html>
