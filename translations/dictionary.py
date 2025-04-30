@@ -42,6 +42,16 @@ translations = {
         "title_required": "標題不能為空",
         #     top_menu 導航欄和語言切換
         "navigate": "導航",
+        # 新增日志页面翻译
+        "index": "序號",
+        "title": "標題",
+        "result": "結果",
+        "reason": "失敗原因",
+        "search_button": "搜尋",
+        "previous": "上一頁",
+        "next": "下一頁",
+        "page": "頁",
+        "total_logs": "Total",
     },
     "en": {
         "search_system": "Journal Search System",
@@ -86,6 +96,16 @@ translations = {
         "title_required": "Title cannot be empty",
         #     top_menu 導航欄和語言切換
         "navigate": "navigate",
+        # Add log page translations
+        "index": "No.",
+        "title": "Title",
+        "result": "Result",
+        "reason": "Reason",
+        "search_button": "Search",
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page",
+        "total_logs": "Total",
     },
     "pt": {
         "search_system": "Sistema de Busca de Periódicos",
@@ -130,5 +150,15 @@ translations = {
         "title_required": "O título não pode estar vazio",
         #     top_menu 導航欄和語言切換
         "navigate": "navegar",
+        # Adicionar traduções da página de log
+        "index": "Nº",
+        "title": "Título",
+        "result": "Resultado",
+        "reason": "Motivo",
+        "search_button": "Pesquisar",
+        "previous": "Anterior",
+        "next": "Próximo",
+        "page": "Página",
+        "total_logs": "Total",
     }
 }

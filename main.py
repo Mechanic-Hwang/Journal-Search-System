@@ -3,20 +3,22 @@
 import os
 import shutil
 from datetime import datetime
-from fastapi import FastAPI, UploadFile, File, Form, Request, Query
+from fastapi import FastAPI, UploadFile, File, Form, Request, Query, Depends, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from typing import List
 import pandas as pd
 import re
 
+from starlette import status
 from starlette.responses import RedirectResponse
 
 from models.models import Base, Journal, UploadLog
-from database.database import engine
+from database.database import engine, get_db
 from translations.dictionary import translations
 from utils.i18n import get_locale, get_translator
 from utils.util import parse_date, safe_str
@@ -233,3 +235,47 @@ async def manual_submit(
             "lang": lang
         })
     return RedirectResponse(url=f"/manual_upload?lang={lang}", status_code=302)
+
+
+# 使用HTTPBasic进行账户验证
+security = HTTPBasic()
+
+def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
+    if credentials.username != "admin" or credentials.password != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+
+@app.get("/log", response_class=HTMLResponse)
+async def log_page(
+        request: Request,
+        lang: str = "zh_mo",
+        page: int = Query(1, ge=1),
+        per_page: int = Query(50, ge=1, le=300),
+        db: Session = Depends(get_db),
+        credentials: HTTPBasicCredentials = Depends(authenticate_user)
+):
+    translation = translations.get(lang)
+
+    # 计算分页起始和结束位置
+    offset = (page - 1) * per_page
+    total_logs = db.query(UploadLog).count()  # 获取总日志数
+    total_pages = (total_logs + per_page - 1) // per_page  # 计算总页数
+
+    # 获取分页数据，包括上传时间
+    logs = db.query(UploadLog).order_by(UploadLog.upload_time.desc()).offset(offset).limit(per_page).all()
+
+    # 返回模板
+    return templates.TemplateResponse("log.html", {
+        "request": request,
+        "translation": translation,
+        "logs": logs,
+        "total_pages": total_pages,
+        "current_page": page,
+        "per_page": per_page,
+        "total_logs": total_logs,
+        "lang": lang
+    })

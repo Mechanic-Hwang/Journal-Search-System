@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ translation['navigate'] }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .table-container {
+            margin-top: 2rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 語言切換 -->
+{% include "top_menu.html" %}
+
+<div class="container">
+    <h1 class="title has-text-centered">{{ translation['navigate'] }}</h1>
+
+    <div class="field">
+        <label class="label">{{ translation['search_system'] }} 日期:</label>
+        <div class="control">
+            <input class="input" type="date" id="logDate" name="logDate">
+        </div>
+    </div>
+
+    <!-- 查询按钮 -->
+    <button class="button is-primary" id="filterButton">{{ translation['search_button'] }}</button>
+
+    <!-- 每页显示多少条数据 -->
+    <div class="field">
+<!--        <label class="label">{{ translation['results_per_page'] }}:</label>-->
+        <div class="control">
+            <select class="select" id="perPageSelect">
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                <option value="300" {% if per_page == 300 %}selected{% endif %}>300</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="notification is-info">
+        {{ translation['total_logs'] }}: {{ total_logs }}
+    </div>
+
+    <!-- 日志表格 -->
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">{{ translation['index'] }}</th>
+                    <th>{{ translation['title'] }}</th>
+                    <th>{{ translation['result'] }}</th>
+                    <th>{{ translation['reason'] }}</th>
+                    <th>{{ translation['upload_time'] }}</th>  <!-- 显示上传时间 -->
+                </tr>
+            </thead>
+            <tbody>
+                {% set start_index = (current_page - 1) * per_page + 1 %}
+                {% for log in logs %}
+                <tr>
+                    <td>{{ start_index + loop.index0 }}</td>  <!-- 计算全局序号 -->
+                    <td>{{ log.title }}</td>
+                    <td>{{ log.result }}</td>
+                    <td>{{ log.reason }}</td>
+                    <td>{{ log.upload_time }}</td>  <!-- 显示上传时间 -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-container">
+        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+            <a class="pagination-previous {% if current_page == 1 %}is-disabled{% endif %}" href="/log?lang={{ lang }}&page={{ current_page - 1 }}&per_page={{ per_page }}">
+                {{ translation['previous'] }}
+            </a>
+            <a class="pagination-next {% if current_page == total_pages %}is-disabled{% endif %}" href="/log?lang={{ lang }}&page={{ current_page + 1 }}&per_page={{ per_page }}">
+                {{ translation['next'] }}
+            </a>
+            <ul class="pagination-list">
+                <li><a class="pagination-link">{{ translation['page'] }} {{ current_page }}</a></li>
+                {% if current_page < total_pages %}
+                <li><a class="pagination-link">{{ translation['page'] }} {{ current_page + 1 }}</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script>
+    // 每页显示多少条数据
+    document.getElementById("perPageSelect").addEventListener("change", function() {
+        let perPage = this.value;
+        let currentPage = {{ current_page }};
+        window.location.href = `/log?lang={{ lang }}&page=${currentPage}&per_page=${perPage}`;
+    });
+
+    // 日期查询按钮
+    document.getElementById("filterButton").addEventListener("click", function() {
+        let selectedDate = document.getElementById("logDate").value;
+        // 执行日期过滤操作，这里你可以实现 AJAX 请求或页面刷新
+    });
+</script>
+
+</body>
+</html>
