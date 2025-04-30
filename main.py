@@ -26,7 +26,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # Set up static
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Database setup
 DATABASE_URL = "sqlite:///./journal.db"
