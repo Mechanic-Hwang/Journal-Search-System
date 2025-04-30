@@ -43,6 +43,7 @@ translations = {
         #     top_menu 導航欄和語言切換
         "navigate": "導航",
         # 新增日志页面翻译
+        "log_title": "操作記錄",
         "index": "序號",
         "title": "標題",
         "result": "結果",
@@ -97,6 +98,7 @@ translations = {
         #     top_menu 導航欄和語言切換
         "navigate": "navigate",
         # Add log page translations
+        "log_title": "Operation Records",
         "index": "No.",
         "title": "Title",
         "result": "Result",
@@ -151,6 +153,7 @@ translations = {
         #     top_menu 導航欄和語言切換
         "navigate": "navegar",
         # Adicionar traduções da página de log
+        "log_title": "Registos de Operação",
         "index": "Nº",
         "title": "Título",
         "result": "Resultado",
