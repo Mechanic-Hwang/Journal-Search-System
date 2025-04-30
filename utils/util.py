@@ -1,6 +1,8 @@
 # Utilities
 from datetime import datetime
 
+import pandas as pd
+
 
 def parse_date(date_str):
     formats = ["%Y年%m月%d日", "%d/%m/%Y", "%Y-%m-%d"]
@@ -10,3 +12,6 @@ def parse_date(date_str):
         except:
             continue
     return None
+
+def safe_str(val):
+    return None if pd.isna(val) else str(val).strip()
