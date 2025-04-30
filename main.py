@@ -75,8 +75,10 @@ async def upload_excel(request: Request, file: UploadFile = File(...), lang: str
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        df = pd.read_excel(file_path)
-    except Exception as e:
+        # 尝试读取所有 Sheet
+        xls = pd.ExcelFile(file_path)
+        sheet_names = xls.sheet_names
+    except Exception:
         return templates.TemplateResponse("upload.html", {
             "request": request,
             "translation": translation,
@@ -88,54 +90,67 @@ async def upload_excel(request: Request, file: UploadFile = File(...), lang: str
         "ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID", "CUM_ISSUE",
         "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE", "DISPLAY_DATE", "KEYWORD", "Url_link"
     ]
-    for col in required_columns:
-        if col not in df.columns:
-            return templates.TemplateResponse("upload.html", {
-                "request": request,
-                "translation": translation,
-                "lang": lang,
-                "error": f"{translation['missing_field']}: {col}"
+
+    for sheet in sheet_names:
+        try:
+            df = xls.parse(sheet)
+        except Exception as e:
+            upload_results.append({
+                "title": f"[{sheet}]",
+                "result": translation["fail"],
+                "reason": f"{translation['file_error']} ({str(e)})"
             })
+            continue
 
-    for _, row in df.iterrows():
-        title = str(row['TITLE']).strip()
-        if not title or title.lower() == 'nan':
-            result = translation['fail']
-            reason = translation['empty_title']
-        elif session.query(Journal).filter(Journal.title == title).first():
-            result = translation['fail']
-            reason = translation['duplicate_title']
-        else:
-            try:
-                search_date = parse_date(str(row['SEARCH_DATE'])) if not pd.isna(row['SEARCH_DATE']) else None
-                if not search_date:
-                    raise ValueError(translation['date_format_error'])
-                journal = Journal(
-                    article_id=safe_str(row['ARTICLE_ID']),
-                    title=safe_str(row['TITLE']),
-                    author=safe_str(row['AUTHOR']),
-                    abstract=safe_str(row['ABSTRACT']),
-                    source_id=safe_str(row['SOURCE_ID']),
-                    cum_issue=safe_str(row['CUM_ISSUE']),
-                    series=safe_str(row['SERIES']),
-                    vol_no=safe_str(row['VOL_NO']),
-                    page_no=safe_str(row['PAGE_NO']),
-                    search_date=search_date,
-                    display_date=safe_str(row['DISPLAY_DATE']),
-                    keyword=safe_str(row['KEYWORD']),
-                    url_link=safe_str(row['Url_link'])
-                )
-                session.add(journal)
-                session.commit()
-                result = translation['success']
-                reason = ""
-            except Exception as e:
+        # 检查字段完整性
+        for col in required_columns:
+            if col not in df.columns:
+                upload_results.append({
+                    "title": f"[{sheet}]",
+                    "result": translation["fail"],
+                    "reason": f"{translation['missing_field']}: {col}"
+                })
+                break  # 当前 sheet 不继续处理
+
+        for _, row in df.iterrows():
+            title = str(row['TITLE']).strip()
+            if not title or title.lower() == 'nan':
                 result = translation['fail']
-                reason = str(e)
+                reason = translation['empty_title']
+            elif session.query(Journal).filter(Journal.title == title).first():
+                result = translation['fail']
+                reason = translation['duplicate_title']
+            else:
+                try:
+                    search_date = parse_date(str(row['SEARCH_DATE'])) if not pd.isna(row['SEARCH_DATE']) else None
+                    if not search_date:
+                        raise ValueError(translation['date_format_error'])
+                    journal = Journal(
+                        article_id=safe_str(row['ARTICLE_ID']),
+                        title=safe_str(row['TITLE']),
+                        author=safe_str(row['AUTHOR']),
+                        abstract=safe_str(row['ABSTRACT']),
+                        source_id=safe_str(row['SOURCE_ID']),
+                        cum_issue=safe_str(row['CUM_ISSUE']),
+                        series=safe_str(row['SERIES']),
+                        vol_no=safe_str(row['VOL_NO']),
+                        page_no=safe_str(row['PAGE_NO']),
+                        search_date=search_date,
+                        display_date=safe_str(row['DISPLAY_DATE']),
+                        keyword=safe_str(row['KEYWORD']),
+                        url_link=safe_str(row['Url_link'])
+                    )
+                    session.add(journal)
+                    session.commit()
+                    result = translation['success']
+                    reason = ""
+                except Exception as e:
+                    result = translation['fail']
+                    reason = str(e)
 
-        log = UploadLog(title=title, result=result, reason=reason)
-        session.add(log)
-        upload_results.append({"title": title, "result": result, "reason": reason})
+            log = UploadLog(title=title, result=result, reason=reason)
+            session.add(log)
+            upload_results.append({"title": title, "result": result, "reason": reason})
 
     session.commit()
     session.close()
@@ -145,6 +160,7 @@ async def upload_excel(request: Request, file: UploadFile = File(...), lang: str
         "lang": lang,
         "results": upload_results
     })
+
 
 
 @app.get("/manual_upload")
