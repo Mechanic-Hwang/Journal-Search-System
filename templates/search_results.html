@@ -30,22 +30,38 @@
             <thead>
                 <tr>
                     <th>{{ translation['index'] }}</th>
+                    <th>{{ translation['ARTICLE_ID'] }}</th>
                     <th>{{ translation['title'] }}</th>
-                    <th>{{ translation['author'] }}</th>
-                    <th>{{ translation['abstract'] }}</th>
-                    <th>{{ translation['search_date'] }}</th>
-                    <th>{{ translation['display_date'] }}</th>
+                    <th>{{ translation['AUTHOR'] }}</th>
+                    <th>{{ translation['ABSTRACT'] }}</th>
+                    <th>{{ translation['SOURCE_ID'] }}</th>
+                    <th>{{ translation['CUM_ISSUE'] }}</th>
+                    <th>{{ translation['SERIES'] }}</th>
+                    <th>{{ translation['VOL_NO'] }}</th>
+                    <th>{{ translation['PAGE_NO'] }}</th>
+                    <th>{{ translation['SEARCH_DATE'] }}</th>
+                    <th>{{ translation['DISPLAY_DATE'] }}</th>
+                    <th>{{ translation['KEYWORD'] }}</th>
+                    <th>{{ translation['Url_link'] }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in results %}
                     <tr>
-                        <td>{{ loop.index + (current_page - 1) * per_page }}</td> <!-- Add this for correct serial number -->
+                        <td>{{ loop.index + (current_page - 1) * per_page }}</td>
+                        <td>{{ row.article_id }}</td>
                         <td>{{ row.title }}</td>
                         <td>{{ row.author }}</td>
                         <td>{{ row.abstract }}</td>
+                        <td>{{ row.source_id }}</td>
+                        <td>{{ row.cum_issue }}</td>
+                        <td>{{ row.series }}</td>
+                        <td>{{ row.vol_no }}</td>
+                        <td>{{ row.page_no }}</td>
                         <td>{{ row.search_date }}</td>
                         <td>{{ row.display_date }}</td>
+                        <td>{{ row.keyword }}</td>
+                        <td>{{ row.url_link }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -57,7 +57,7 @@ def search_page(request: Request):
 async def search_results(
         request: Request,
         lang: str = "zh_mo",
-        query: str = Query(None, min_length=3),  # 用于简单搜索，查询标题
+        query: str = Query(None, min_length=3),
         article_id: str = Query(None),
         title: str = Query(None),
         author: str = Query(None),
@@ -70,17 +70,34 @@ async def search_results(
         search_date: str = Query(None),
         display_date: str = Query(None),
         keyword: str = Query(None),
+        page: int = Query(1, ge=1),  # 当前页，默认是第一页
+        per_page: int = Query(10, ge=1),  # 每页显示的条数，默认是10
         db: Session = Depends(get_db),
 ):
     translation = translations.get(lang)
 
+    # 如果没有任何查询条件，则返回空结果
+    if not any([query, article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date, display_date, keyword]):
+        # 返回一个空结果
+        return templates.TemplateResponse("search_results.html", {
+            "request": request,
+            "lang": lang,
+            "translation": translation,
+            "results": [],
+            "no_results": True,
+            "query": query,
+            "current_page": page,
+            "per_page": per_page,
+            "total_pages": 0,
+            "advanced_search": False
+        })
+
+    # 处理查询过滤器
     query_filter = db.query(Journal)
 
-    # 简单搜索：只查询标题
+    # 处理搜索字段
     if query:
         query_filter = query_filter.filter(Journal.title.like(f"%{query}%"))
-
-    # 高级搜索：查询各个字段
     if article_id:
         query_filter = query_filter.filter(Journal.article_id.like(f"%{article_id}%"))
     if title:
@@ -106,22 +123,34 @@ async def search_results(
     if keyword:
         query_filter = query_filter.filter(Journal.keyword.like(f"%{keyword}%"))
 
+    # 获取所有结果
     results = query_filter.all()
 
+    # 分页处理
+    total_results = len(results)
+    total_pages = (total_results + per_page - 1) // per_page
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_results = results[start:end]
+
     # 判断是否有结果
-    no_results = len(results) == 0
+    no_results = len(paginated_results) == 0
 
     return templates.TemplateResponse("search_results.html", {
         "request": request,
         "lang": lang,
         "translation": translation,
-        "results": results,
-        "no_results": no_results,  # 用于判断是否显示"没有搜索结果"消息
+        "results": paginated_results,
+        "no_results": no_results,
         "query": query,
+        "current_page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
         "advanced_search": True if query or any(
             [article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date,
              display_date, keyword]) else False
     })
+
 
 
 
