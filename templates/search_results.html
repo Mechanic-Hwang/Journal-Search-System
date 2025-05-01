@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ translation['search_system'] }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 relative">
+{% include "top_menu.html" %}
+
+<!-- Main Content -->
+<div class="flex flex-col items-center justify-center min-h-[80vh] px-4">
+    <h1 class="text-4xl font-bold mb-8">{{ translation['search_system'] }}</h1>
+
+    {% if no_results %}
+        <div class="notification is-warning mb-4">
+            {{ translation['no_results_found'] }}
+        </div>
+    {% else %}
+        <!-- Display search results in a table -->
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+                <tr>
+                    <th>{{ translation['index'] }}</th>
+                    <th>{{ translation['title'] }}</th>
+                    <th>{{ translation['author'] }}</th>
+                    <th>{{ translation['abstract'] }}</th>
+                    <th>{{ translation['search_date'] }}</th>
+                    <th>{{ translation['display_date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ loop.index + (current_page - 1) * per_page }}</td> <!-- Add this for correct serial number -->
+                        <td>{{ row.title }}</td>
+                        <td>{{ row.author }}</td>
+                        <td>{{ row.abstract }}</td>
+                        <td>{{ row.search_date }}</td>
+                        <td>{{ row.display_date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination is-centered mt-4">
+            <ul class="pagination-list">
+                {% if current_page > 1 %}
+                    <li>
+                        <a href="?lang={{ lang }}&query={{ query }}&page={{ current_page - 1 }}" class="pagination-link">{{ translation['previous'] }}</a>
+                    </li>
+                {% endif %}
+
+                {% if current_page < total_pages %}
+                    <li>
+                        <a href="?lang={{ lang }}&query={{ query }}&page={{ current_page + 1 }}" class="pagination-link">{{ translation['next'] }}</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

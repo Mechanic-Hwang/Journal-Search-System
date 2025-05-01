@@ -8,6 +8,9 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
+        "query_error": "請輸入至少 4 個字的查詢條件",
+        # results page
+        "no_results_found": "沒有找到任何結果",
         #    ================ upload
         "upload_title": "期刊資料上傳",
         "choose_file": "選擇文件",
@@ -58,6 +61,9 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
+        "query_error": "Please enter at least 4 characters for the search query",
+        # results page
+        "no_results_found": "No results found",
         #    ================ upload
         "upload_title": "Upload Journal Data",
         "choose_file": "Choose File",
@@ -94,8 +100,8 @@ translations = {
         "navigate": "navigate",
         # Add log page translations
         "log_title": "Operation Records",
-        "previous": "Previous",
-        "next": "Next",
+        "previous": "Previous",# 和搜索結果頁共用
+        "next": "Next",# 和搜索結果頁共用
         "page": "Page",
         "total_logs": "Total",
     },
@@ -108,6 +114,9 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
+        "query_error": "Por favor, insira pelo menos 4 caracteres para a consulta",
+        # results page
+        "no_results_found": "Nenhum resultado encontrado",
         #    ================ upload
         "upload_title": "Upload de Dados de Periódicos",
         "choose_file": "Escolher Arquivo",

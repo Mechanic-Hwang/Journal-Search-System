@@ -14,37 +14,27 @@
         .search-input::placeholder {
             font-style: italic;
         }
-            /* 確保 details 和 summary 的顯示行為正常 */
-        details[open] summary {
+
+        .bubble {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f87171; /* Red color */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
             font-weight: bold;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-
-        details summary {
-            cursor: pointer;
-        }
-
-        details div {
-            display: none;
-            padding-left: 1rem;
-        }
-
-        details[open] div {
-            display: block;
-        }
-
-        /* 為摺疊框增加平滑的過渡效果 */
-        details div {
-            transition: all 0.3s ease-out;
-        }
-    </style>
-
     </style>
 </head>
 
 <body class="text-gray-900 relative">
 <!-- Language Dropdown Top-Right -->
 {% include "top_menu.html" %}
-
 
 <!-- Main Content -->
 <div class="flex flex-col items-center justify-center min-h-[80vh] px-4">
@@ -53,12 +43,12 @@
     <h1 class="text-4xl font-bold mb-8">{{ translation['search_system'] }}</h1>
 
     <!-- Search Form -->
-    <form method="get" action="/search_results" class="w-full max-w-2xl space-y-4">
+    <form id="searchForm" method="get" action="/search_results" class="w-full max-w-2xl space-y-4">
         <input type="hidden" name="lang" value="{{ lang }}">
 
         <!-- Search Input -->
         <div class="flex items-center border border-gray-300 rounded-full overflow-hidden bg-white shadow-sm">
-            <input type="text" name="query"
+            <input id="searchInput" type="text" name="query"
                    placeholder="{{ translation['placeholder'] }}"
                    class="search-input w-full px-6 py-3 text-base md:text-lg outline-none text-gray-800 placeholder-gray-400 {% if lang == 'zh_mo' %}placeholder:text-gray-300{% endif %}">
             <button type="submit"
@@ -69,9 +59,7 @@
 
         <!-- Advanced Search Toggle -->
         <details class="bg-white shadow rounded-lg p-4">
-            <summary class="cursor-pointer text-blue-600 text-sm md:text-base font-semibold">{{
-                translation['advanced_search'] }}
-            </summary>
+            <summary class="cursor-pointer text-blue-600 text-sm md:text-base font-semibold">{{ translation['advanced_search'] }}</summary>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {% for field in ["ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID",
                 "CUM_ISSUE", "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE",
@@ -87,8 +75,43 @@
 
     </form>
 
+    <!-- Error Bubble -->
+    <div id="errorBubble" class="bubble">
+        {{ translation['query_error'] }}
+    </div>
+
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const errorBubble = document.getElementById('errorBubble');
+
+        searchForm.addEventListener('submit', function (event) {
+            const query = searchInput.value.trim();
+
+            // Simple validation for search query length
+            if (query.length <= 3) {
+                event.preventDefault();  // Prevent form submission if query is too short
+                showErrorMessage();
+            }
+        });
+
+        function showErrorMessage() {
+            // Show the error message for 2-3 seconds
+            errorBubble.style.visibility = 'visible';
+            errorBubble.style.opacity = 1;
+
+            setTimeout(() => {
+                errorBubble.style.opacity = 0;
+                setTimeout(() => {
+                    errorBubble.style.visibility = 'hidden';
+                }, 300);  // Hides the bubble after fade-out
+            }, 2000); // Display the bubble for 2 seconds
+        }
+    });
+</script>
 
 </body>
 </html>

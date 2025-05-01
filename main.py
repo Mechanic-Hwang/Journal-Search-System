@@ -37,6 +37,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 templates = Jinja2Templates(directory="templates")
 
+
 @app.get("/", response_class=HTMLResponse)
 def search_page(request: Request):
     try:
@@ -50,6 +51,79 @@ def search_page(request: Request):
     except Exception as e:
         print("模板渲染出错：", str(e))
         raise e
+
+
+@app.get("/search_results", response_class=HTMLResponse)
+async def search_results(
+        request: Request,
+        lang: str = "zh_mo",
+        query: str = Query(None, min_length=3),  # 用于简单搜索，查询标题
+        article_id: str = Query(None),
+        title: str = Query(None),
+        author: str = Query(None),
+        abstract: str = Query(None),
+        source_id: str = Query(None),
+        cum_issue: str = Query(None),
+        series: str = Query(None),
+        vol_no: str = Query(None),
+        page_no: str = Query(None),
+        search_date: str = Query(None),
+        display_date: str = Query(None),
+        keyword: str = Query(None),
+        db: Session = Depends(get_db),
+):
+    translation = translations.get(lang)
+
+    query_filter = db.query(Journal)
+
+    # 简单搜索：只查询标题
+    if query:
+        query_filter = query_filter.filter(Journal.title.like(f"%{query}%"))
+
+    # 高级搜索：查询各个字段
+    if article_id:
+        query_filter = query_filter.filter(Journal.article_id.like(f"%{article_id}%"))
+    if title:
+        query_filter = query_filter.filter(Journal.title.like(f"%{title}%"))
+    if author:
+        query_filter = query_filter.filter(Journal.author.like(f"%{author}%"))
+    if abstract:
+        query_filter = query_filter.filter(Journal.abstract.like(f"%{abstract}%"))
+    if source_id:
+        query_filter = query_filter.filter(Journal.source_id.like(f"%{source_id}%"))
+    if cum_issue:
+        query_filter = query_filter.filter(Journal.cum_issue.like(f"%{cum_issue}%"))
+    if series:
+        query_filter = query_filter.filter(Journal.series.like(f"%{series}%"))
+    if vol_no:
+        query_filter = query_filter.filter(Journal.vol_no.like(f"%{vol_no}%"))
+    if page_no:
+        query_filter = query_filter.filter(Journal.page_no.like(f"%{page_no}%"))
+    if search_date:
+        query_filter = query_filter.filter(Journal.search_date.like(f"%{search_date}%"))
+    if display_date:
+        query_filter = query_filter.filter(Journal.display_date.like(f"%{display_date}%"))
+    if keyword:
+        query_filter = query_filter.filter(Journal.keyword.like(f"%{keyword}%"))
+
+    results = query_filter.all()
+
+    # 判断是否有结果
+    no_results = len(results) == 0
+
+    return templates.TemplateResponse("search_results.html", {
+        "request": request,
+        "lang": lang,
+        "translation": translation,
+        "results": results,
+        "no_results": no_results,  # 用于判断是否显示"没有搜索结果"消息
+        "query": query,
+        "advanced_search": True if query or any(
+            [article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date,
+             display_date, keyword]) else False
+    })
+
+
 
 # Upload Endpoint
 @app.get("/upload", response_class=HTMLResponse)
@@ -164,7 +238,6 @@ async def upload_excel(request: Request, file: UploadFile = File(...), lang: str
     })
 
 
-
 @app.get("/manual_upload")
 async def manual_upload_form(request: Request, lang: str = "zh_mo"):
     translation = translations.get(lang)
@@ -177,21 +250,21 @@ async def manual_upload_form(request: Request, lang: str = "zh_mo"):
 
 @app.post("/manual_submit")
 async def manual_submit(
-    request: Request,
-    article_id: str = Form(""),
-    title: str = Form(""),
-    author: str = Form(""),
-    abstract: str = Form(""),
-    source_id: str = Form(""),
-    cum_issue: str = Form(""),
-    series: str = Form(""),
-    vol_no: str = Form(""),
-    page_no: str = Form(""),
-    search_date: str = Form(""),
-    display_date: str = Form(""),
-    keyword: str = Form(""),
-    url_link: str = Form(""),
-    lang: str = Form("zh_mo")
+        request: Request,
+        article_id: str = Form(""),
+        title: str = Form(""),
+        author: str = Form(""),
+        abstract: str = Form(""),
+        source_id: str = Form(""),
+        cum_issue: str = Form(""),
+        series: str = Form(""),
+        vol_no: str = Form(""),
+        page_no: str = Form(""),
+        search_date: str = Form(""),
+        display_date: str = Form(""),
+        keyword: str = Form(""),
+        url_link: str = Form(""),
+        lang: str = Form("zh_mo")
 ):
     session = SessionLocal()
     error = None
@@ -239,6 +312,7 @@ async def manual_submit(
 
 # 使用HTTPBasic进行账户验证
 security = HTTPBasic()
+
 
 def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
     if credentials.username != "admin" or credentials.password != "admin":
