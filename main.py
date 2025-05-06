@@ -94,8 +94,6 @@ async def search_results(
 
     # 处理查询过滤器
     query_filter = db.query(Journal)
-
-    print(456)
     # 处理搜索字段
     if query:
         query_filter = query_filter.filter(Journal.title.like(f"%{query}%"))
