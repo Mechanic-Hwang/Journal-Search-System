@@ -57,7 +57,7 @@ def search_page(request: Request):
 async def search_results(
         request: Request,
         lang: str = "zh_mo",
-        query: str = Query(None, min_length=3),
+        query: str = Query(None),
         article_id: str = Query(None),
         title: str = Query(None),
         author: str = Query(None),
@@ -95,6 +95,7 @@ async def search_results(
     # 处理查询过滤器
     query_filter = db.query(Journal)
 
+    print(456)
     # 处理搜索字段
     if query:
         query_filter = query_filter.filter(Journal.title.like(f"%{query}%"))

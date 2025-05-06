@@ -20,7 +20,7 @@
             top: 10%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #f87171; /* Red color */
+            background-color: #f87171;
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
@@ -28,25 +28,26 @@
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+
+        .input-error {
+            border: 2px solid red !important;
+            box-shadow: 0 0 5px red !important;
         }
     </style>
 </head>
 
 <body class="text-gray-900 relative">
-<!-- Language Dropdown Top-Right -->
 {% include "top_menu.html" %}
 
-<!-- Main Content -->
 <div class="flex flex-col items-center justify-center min-h-[80vh] px-4">
-
-    <!-- Title -->
     <h1 class="text-4xl font-bold mb-8">{{ translation['search_system'] }}</h1>
 
-    <!-- Search Form -->
     <form id="searchForm" method="get" action="/search_results" class="w-full max-w-2xl space-y-4">
         <input type="hidden" name="lang" value="{{ lang }}">
 
-        <!-- Search Input -->
+        <!-- 普通搜索框 -->
         <div class="flex items-center border border-gray-300 rounded-full overflow-hidden bg-white shadow-sm">
             <input id="searchInput" type="text" name="query"
                    placeholder="{{ translation['placeholder'] }}"
@@ -57,49 +58,49 @@
             </button>
         </div>
 
-        <!-- Advanced Search Toggle -->
-        <details class="bg-white shadow rounded-lg p-4">
-            <summary class="cursor-pointer text-blue-600 text-sm md:text-base font-semibold">{{ translation['advanced_search'] }}</summary>
+        <!-- 高級檢索 -->
+        <details id="advancedSearch" class="bg-white shadow rounded-lg p-4">
+            <summary class="cursor-pointer text-blue-600 text-sm md:text-base font-semibold">
+                {{ translation['advanced_search'] }}
+            </summary>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {% for field in ["ARTICLE_ID", "TITLE", "AUTHOR", "ABSTRACT", "SOURCE_ID",
-                "CUM_ISSUE", "SERIES", "VOL_NO", "PAGE_NO", "SEARCH_DATE",
-                "DISPLAY_DATE", "KEYWORD"] %}
+                {% for field in ["article_id", "title", "author", "abstract", "source_id",
+                "cum_issue", "series", "vol_no", "page_no", "search_date",
+                "display_date", "keyword"] %}
                 <div>
-                    <label class="block font-semibold mb-1" for="{{ field }}">{{ field }}</label>
+                    <label class="block font-semibold mb-1" for="{{ field }}">{{ translation[field.upper()] or field
+                        }}</label>
+                    {% if field in ["search_date", "display_date"] %}
+                    <input type="date" name="{{ field }}" id="{{ field }}"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                           placeholder="YYYY-MM-DD"
+                           onfocus="this.showPicker()">
+                    {% else %}
                     <input type="text" name="{{ field }}" id="{{ field }}"
                            class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
         </details>
-
     </form>
 
-    <!-- Error Bubble -->
+    <!-- 氣泡錯誤提示 -->
     <div id="errorBubble" class="bubble">
         {{ translation['query_error'] }}
     </div>
-
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const searchForm = document.getElementById('searchForm');
+        const form = document.getElementById('searchForm');
         const searchInput = document.getElementById('searchInput');
+        const titleInput = document.getElementById('TITLE');
         const errorBubble = document.getElementById('errorBubble');
+        const advancedSearch = document.getElementById('advancedSearch');
 
-        searchForm.addEventListener('submit', function (event) {
-            const query = searchInput.value.trim();
-
-            // Simple validation for search query length
-            if (query.length <= 3) {
-                event.preventDefault();  // Prevent form submission if query is too short
-                showErrorMessage();
-            }
-        });
-
-        function showErrorMessage() {
-            // Show the error message for 2-3 seconds
+        function showErrorMessage(msg) {
+            errorBubble.textContent = msg;
             errorBubble.style.visibility = 'visible';
             errorBubble.style.opacity = 1;
 
@@ -107,9 +108,39 @@
                 errorBubble.style.opacity = 0;
                 setTimeout(() => {
                     errorBubble.style.visibility = 'hidden';
-                }, 300);  // Hides the bubble after fade-out
-            }, 2000); // Display the bubble for 2 seconds
+                }, 300);
+            }, 2000);
         }
+
+        function markInvalidInput(input) {
+            input.classList.add('input-error');
+        }
+
+        function clearInputMark(input) {
+            input.classList.remove('input-error');
+        }
+
+        form.addEventListener('submit', function (e) {
+            const isAdvancedOpen = advancedSearch.open;
+            const query = searchInput.value.trim();
+            const title = titleInput.value.trim();
+
+            if (isAdvancedOpen) {
+                if (title.length < 2) {
+                    e.preventDefault();
+                    markInvalidInput(titleInput);
+                    showErrorMessage("{{ translation['query_error'] }}");
+                } else {
+                    clearInputMark(titleInput);
+                }
+            } else {
+                clearInputMark(titleInput); // ensure cleanup
+                if (query.length <= 2) {
+                    e.preventDefault();
+                    showErrorMessage("{{ translation['query_error'] }}");
+                }
+            }
+        });
     });
 </script>
 
