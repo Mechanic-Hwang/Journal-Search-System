@@ -26,14 +26,6 @@ class Journal(Base):
     extra_field1 = Column(String, nullable=True)
     extra_field2 = Column(String, nullable=True)
     extra_field3 = Column(String, nullable=True)
-    extra_field4 = Column(String, nullable=True)
-    extra_field5 = Column(String, nullable=True)
-    extra_field6 = Column(String, nullable=True)
-    extra_field7 = Column(String, nullable=True)
-    extra_field8 = Column(String, nullable=True)
-    extra_field9 = Column(String, nullable=True)
-    extra_field10 = Column(String, nullable=True)
-
 
 class UploadLog(Base):
     __tablename__ = "upload_logs"
