@@ -31,6 +31,7 @@ translations = {
         "manual_title": "手動填寫",
         "submit": "提交",
         "ARTICLE_ID": "文章編號",
+        "TITLE": "標題",
         "AUTHOR": "作者",
         "ABSTRACT": "摘要",
         "SOURCE_ID": "來源編號",
@@ -81,6 +82,7 @@ translations = {
         "no_file": "No file selected",
         "index": "No.",
         # ================ manual upload
+        "TITLE": "Title",
         "manual_title": "Manual Entry",
         "submit": "Submit",
         "ARTICLE_ID": "Article ID",
@@ -134,6 +136,7 @@ translations = {
         "no_file": "Nenhum arquivo selecionado",
         "index": "Nº",
         # ================ manual upload
+        "TITLE": "Título",
         "manual_title": "Inserção Manual",
         "submit": "Enviar",
         "ARTICLE_ID": "ID do Artigo",
