@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from typing import List
+from typing import List, Optional
 import pandas as pd
 import re
 
@@ -268,14 +268,14 @@ async def upload_excel(request: Request, file: UploadFile = File(...), lang: str
 
 
 @app.get("/manual_upload")
-async def manual_upload_form(request: Request, lang: str = "zh_mo"):
+async def manual_upload_form(request: Request, lang: str = "zh_mo", success: Optional[bool] = False):
     translation = translations.get(lang)
     return templates.TemplateResponse("manual_upload.html", {
         "request": request,
         "translation": translation,
-        "lang": lang
+        "lang": lang,
+        "success": success
     })
-
 
 @app.post("/manual_submit")
 async def manual_submit(
@@ -336,7 +336,7 @@ async def manual_submit(
             "error": error,
             "lang": lang
         })
-    return RedirectResponse(url=f"/manual_upload?lang={lang}", status_code=302)
+    return RedirectResponse(url=f"/manual_upload?lang={lang}&success=true",  status_code=302)
 
 
 # 使用HTTPBasic进行账户验证
