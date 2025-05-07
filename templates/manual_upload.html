@@ -38,7 +38,7 @@
         <input type="hidden" name="lang" value="{{ lang }}">
         <div class="columns is-multiline">
         {% set used_fields = [] %}
-        {% for field in ['ARTICLE_ID', 'TITLE', 'AUTHOR', 'ABSTRACT', 'SOURCE_ID', 'CUM_ISSUE', 'SERIES', 'VOL_NO', 'PAGE_NO', 'SEARCH_DATE', 'DISPLAY_DATE', 'KEYWORD', 'Url_link'] %}
+        {% for field in ['article_id', 'title', 'author', 'abstract', 'source_id', 'cum_issue', 'series', 'vol_no', 'page_no', 'search_date', 'display_date', 'keyword', 'url_link'] %}
             {% if field not in used_fields %}
             {% set _ = used_fields.append(field) %}
             <div class="column is-half">
