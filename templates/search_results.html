@@ -21,68 +21,86 @@
     <h1 class="text-4xl font-bold mb-8">{{ translation['search_system'] }}</h1>
 
     {% if no_results %}
-        <div class="notification is-warning mb-4">
-            {{ translation['no_results_found'] }}
-        </div>
+    <div class="notification is-warning mb-4">
+        {{ translation['no_results_found'] }}
+    </div>
     {% else %}
-        <!-- Display search results in a table -->
-        <table class="table is-bordered is-striped is-fullwidth">
-            <thead>
-                <tr>
-                    <th>{{ translation['index'] }}</th>
-                    <th>{{ translation['ARTICLE_ID'] }}</th>
-                    <th>{{ translation['title'] }}</th>
-                    <th>{{ translation['AUTHOR'] }}</th>
-                    <th>{{ translation['ABSTRACT'] }}</th>
-                    <th>{{ translation['SOURCE_ID'] }}</th>
-                    <th>{{ translation['CUM_ISSUE'] }}</th>
-                    <th>{{ translation['SERIES'] }}</th>
-                    <th>{{ translation['VOL_NO'] }}</th>
-                    <th>{{ translation['PAGE_NO'] }}</th>
-                    <th>{{ translation['SEARCH_DATE'] }}</th>
-                    <th>{{ translation['DISPLAY_DATE'] }}</th>
-                    <th>{{ translation['KEYWORD'] }}</th>
-                    <th>{{ translation['Url_link'] }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in results %}
-                    <tr>
-                        <td>{{ loop.index + (current_page - 1) * per_page }}</td>
-                        <td>{{ row.article_id }}</td>
-                        <td>{{ row.title }}</td>
-                        <td>{{ row.author }}</td>
-                        <td>{{ row.abstract }}</td>
-                        <td>{{ row.source_id }}</td>
-                        <td>{{ row.cum_issue }}</td>
-                        <td>{{ row.series }}</td>
-                        <td>{{ row.vol_no }}</td>
-                        <td>{{ row.page_no }}</td>
-                        <td>{{ row.search_date }}</td>
-                        <td>{{ row.display_date }}</td>
-                        <td>{{ row.keyword }}</td>
-                        <td>{{ row.url_link }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        <div class="pagination is-centered mt-4">
-            <ul class="pagination-list">
-                {% if current_page > 1 %}
-                    <li>
-                        <a href="?lang={{ lang }}&query={{ query }}&page={{ current_page - 1 }}" class="pagination-link">{{ translation['previous'] }}</a>
-                    </li>
+    <!-- Display search results in a table -->
+    <table class="table is-bordered is-striped is-fullwidth">
+        <thead>
+        <tr>
+            <th>{{ translation['index'] }}</th>
+            <th>{{ translation['ARTICLE_ID'] }}</th>
+            <th>{{ translation['title'] }}</th>
+            <th>{{ translation['AUTHOR'] }}</th>
+            <th>{{ translation['ABSTRACT'] }}</th>
+            <th>{{ translation['SOURCE_ID'] }}</th>
+            <th>{{ translation['CUM_ISSUE'] }}</th>
+            <th>{{ translation['SERIES'] }}</th>
+            <th>{{ translation['VOL_NO'] }}</th>
+            <th>{{ translation['PAGE_NO'] }}</th>
+            <th>{{ translation['SEARCH_DATE'] }}</th>
+            <th>{{ translation['DISPLAY_DATE'] }}</th>
+            <th>{{ translation['KEYWORD'] }}</th>
+            <th>{{ translation['Url_link'] }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in results %}
+        <tr>
+            <td>{{ loop.index + (current_page - 1) * per_page }}</td>
+            <td>{{ row.article_id }}</td>
+            <td>{{ row.title }}</td>
+            <td>{{ row.author }}</td>
+            <td>{{ row.abstract }}</td>
+            <td>{{ row.source_id }}</td>
+            <td>{{ row.cum_issue }}</td>
+            <td>{{ row.series }}</td>
+            <td>{{ row.vol_no }}</td>
+            <td>{{ row.page_no }}</td>
+            <td>{{ row.search_date }}</td>
+            <td>{{ row.display_date }}</td>
+            <td>{{ row.keyword }}</td>
+            <td>
+                {% if row.url_link %}
+                <a href="{{ row.url_link }}" target="_blank" rel="noopener noreferrer" class="has-text-link">
+                    {{ row.url_link }}
+                </a>
                 {% endif %}
+            </td>
 
-                {% if current_page < total_pages %}
-                    <li>
-                        <a href="?lang={{ lang }}&query={{ query }}&page={{ current_page + 1 }}" class="pagination-link">{{ translation['next'] }}</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% set querystring = [] %}
+    {% for key, value in request.query_params.items() if key != "page" %}
+    {% set _ = querystring.append(key ~ "=" ~ value) %}
+    {% endfor %}
+    {% set base_url = "?" ~ querystring|join("&") %}
+    <!-- Pagination -->
+    <div class="pagination is-centered mt-4">
+        <ul class="pagination-list">
+            {% if current_page > 1 %}
+            <li>
+                <a href="{{ base_url }}&page={{ current_page - 1 }}" class="pagination-link">{{ translation['previous']
+                    }}</a>
+            </li>
+            {% endif %}
+
+            {% if current_page < total_pages %}
+            <li>
+                <a href="{{ base_url }}&page={{ current_page + 1 }}" class="pagination-link">{{ translation['next']
+                    }}</a>
+            </li>
+            {% endif %}
+            <!-- Total Results Count -->
+            <div class="mr-6 text-right text-sm text-gray-700">
+                {{ translation['total_logs'] }}: {{ total_results }}
+            </div>
+        </ul>
+    </div>
+
     {% endif %}
 </div>
 

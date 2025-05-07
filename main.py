@@ -75,7 +75,7 @@ async def search_results(
         db: Session = Depends(get_db),
 ):
     translation = translations.get(lang)
-
+    print(article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date, display_date, keyword)
     # 如果没有任何查询条件，则返回空结果
     if not any([query, article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date, display_date, keyword]):
         # 返回一个空结果
@@ -144,6 +144,7 @@ async def search_results(
         "query": query,
         "current_page": page,
         "per_page": per_page,
+        "total_results": total_results,
         "total_pages": total_pages,
         "advanced_search": True if query or any(
             [article_id, title, author, abstract, source_id, cum_issue, series, vol_no, page_no, search_date,
