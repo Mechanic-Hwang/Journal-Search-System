@@ -30,7 +30,6 @@
         <thead>
         <tr>
             <th>{{ translation['index'] }}</th>
-            <th>{{ translation['article_id'] }}</th>
             <th>{{ translation['title'] }}</th>
             <th>{{ translation['author'] }}</th>
             <th>{{ translation['abstract'] }}</th>
@@ -49,7 +48,6 @@
         {% for row in results %}
         <tr>
             <td>{{ loop.index + (current_page - 1) * per_page }}</td>
-            <td>{{ row.article_id }}</td>
             <td>{{ row.title }}</td>
             <td>{{ row.author }}</td>
             <td>{{ row.abstract }}</td>

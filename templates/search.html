@@ -64,31 +64,49 @@
                 {{ translation['advanced_search'] }}
             </summary>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {% for field in ["article_id", "title", "author", "abstract", "source_id",
-                "cum_issue", "series", "vol_no", "page_no", "search_date",
-                "display_date", "keyword"] %}
                 <div>
-                    <label class="block font-semibold mb-1" for="{{ field }}">{{ translation[field.upper()] or field
-                        }}</label>
-                    {% if field in ["search_date", "display_date"] %}
-                    <input type="date" name="{{ field }}" id="{{ field }}"
-                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                           placeholder="YYYY-MM-DD"
-                           onfocus="this.showPicker()">
-                    {% else %}
-                    <input type="text" name="{{ field }}" id="{{ field }}"
+                    <label class="block font-semibold mb-1" for="title">{{ translation['title'] }}</label>
+                    <input type="text" name="title" id="title"
                            class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
-                    {% endif %}
                 </div>
-                {% endfor %}
+                <div>
+                    <label class="block font-semibold mb-1" for="author">{{ translation['author'] }}</label>
+                    <input type="text" name="author" id="author"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1" for="abstract">{{ translation['abstract'] }}</label>
+                    <input type="text" name="abstract" id="abstract"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1" for="cum_issue">{{ translation['cum_issue'] }}</label>
+                    <input type="text" name="cum_issue" id="cum_issue"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1" for="vol_no">{{ translation['vol_no'] }}</label>
+                    <input type="text" name="vol_no" id="vol_no"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1" for="display_date">{{ translation['display_date'] }}</label>
+                    <input type="date" name="display_date" id="display_date"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1" for="keyword">{{ translation['keyword'] }}</label>
+                    <input type="text" name="keyword" id="keyword"
+                           class="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                </div>
             </div>
         </details>
-    </form>
 
-    <!-- 氣泡錯誤提示 -->
-    <div id="errorBubble" class="bubble">
-        {{ translation['query_error'] }}
-    </div>
+
+        <!-- 氣泡錯誤提示 -->
+        <div id="errorBubble" class="bubble">
+            {{ translation['query_error'] }}
+        </div>
 </div>
 
 <script>
