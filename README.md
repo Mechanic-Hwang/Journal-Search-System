@@ -96,8 +96,66 @@ uvicorn app.main:app --reload
 ### 使用方式（需以系統管理員身份執行 PowerShell）：
 
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force
-.\deploy-fastapi.ps1
+$ErrorActionPreference = "Stop"
+
+Write-Host "`n🚀 FastAPI Windows 部署腳本開始執行..." -ForegroundColor Cyan
+
+# 1. 安裝 Git
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "🔧 Git 未安裝，正在下載安裝程序..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri "https://github.com/git-for-windows/git/releases/download/v2.44.0.windows.1/Git-2.44.0-64-bit.exe" -OutFile "$env:TEMP\git-installer.exe"
+    Start-Process "$env:TEMP\git-installer.exe" -ArgumentList "/VERYSILENT" -Wait
+    Write-Host "✅ Git 安裝完成"
+} else {
+    Write-Host "✅ Git 已存在"
+}
+
+# 2. 安裝 Python 3.13
+$pythonPath = "C:\Python313\python.exe"
+if (-not (Test-Path $pythonPath)) {
+    Write-Host "🐍 正在安裝 Python 3.13..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" -OutFile "$env:TEMP\python-installer.exe"
+    Start-Process "$env:TEMP\python-installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=`"C:\Python313`"" -Wait
+    Write-Host "✅ Python 安裝完成"
+} else {
+    Write-Host "✅ Python 3.13 已存在"
+}
+
+# 3. 設定環境變數（臨時）
+$env:Path += ";C:\Python313;C:\Python313\Scripts"
+
+# 4. 確認 pip 存在
+Write-Host "`n📦 確認 pip 與 virtualenv..."
+python --version
+pip install --upgrade pip virtualenv
+
+# 5. 克隆 Git 倉庫
+if (-not (Test-Path "./fastApiProject1")) {
+    Write-Host "📥 正在克隆 Git 倉庫..."
+    git clone https://github.com/Mechanic-Hwang/fastApiProject1.git
+} else {
+    Write-Host "📁 倉庫已存在，跳過克隆"
+}
+
+cd fastApiProject1
+
+# 6. 建立虛擬環境並啟用
+Write-Host "🐍 建立虛擬環境..."
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# 7. 安裝依賴
+if (Test-Path "requirements.txt") {
+    Write-Host "📦 安裝 requirements.txt..."
+    pip install -r requirements.txt
+} else {
+    Write-Host "⚠️ 找不到 requirements.txt，請確認依賴安裝"
+}
+
+# 8. 啟動 Uvicorn 伺服器
+Write-Host "🚀 啟動 FastAPI 應用..."
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
 ```
 
 
