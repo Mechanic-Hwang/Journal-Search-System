@@ -132,7 +132,7 @@ pip install --upgrade pip virtualenv
 # 5. 克隆 Git 倉庫
 if (-not (Test-Path "./fastApiProject1")) {
     Write-Host "📥 正在克隆 Git 倉庫..."
-    git clone https://github.com/Mechanic-Hwang/fastApiProject1.git
+    git clone https://github.com/Mechanic-Hwang/Journal-Search-System.git
 } else {
     Write-Host "📁 倉庫已存在，跳過克隆"
 }
