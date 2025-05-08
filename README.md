@@ -98,6 +98,7 @@ uvicorn app.main:app --reload
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
 .\deploy-fastapi.ps1
+```
 
 
 ---
