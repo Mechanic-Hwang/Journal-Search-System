@@ -296,47 +296,55 @@ async def manual_submit(
         lang: str = Form("zh_mo")
 ):
     session = SessionLocal()
+    translation = translations.get(lang)
     error = None
 
+    # 校驗標題是否為空
     if not title.strip():
-        error = translations.get(lang)['title_required']
+        error = translation['title_required']
     else:
-        try:
-            journal = Journal(
-                article_id=article_id.strip() or None,
-                title=title.strip(),
-                author=author.strip() or None,
-                abstract=abstract.strip() or None,
-                source_id=source_id.strip() or None,
-                cum_issue=cum_issue.strip() or None,
-                series=series.strip() or None,
-                vol_no=vol_no.strip() or None,
-                page_no=page_no.strip() or None,
-                search_date=parse_date(search_date.strip()) if search_date.strip() else None,
-                display_date=display_date.strip() or None,
-                keyword=keyword.strip() or None,
-                url_link=url_link.strip() or None
-            )
-            session.add(journal)
-            session.commit()
+        # 主動查詢是否有重複標題
+        existing = session.query(Journal).filter_by(title=title.strip()).first()
+        if existing:
+            error = translation['duplicate_title']  # 使用翻譯字典中的友好提示
+        else:
+            try:
+                journal = Journal(
+                    article_id=article_id.strip() or None,
+                    title=title.strip(),
+                    author=author.strip() or None,
+                    abstract=abstract.strip() or None,
+                    source_id=source_id.strip() or None,
+                    cum_issue=cum_issue.strip() or None,
+                    series=series.strip() or None,
+                    vol_no=vol_no.strip() or None,
+                    page_no=page_no.strip() or None,
+                    search_date=parse_date(search_date.strip()) if search_date.strip() else None,
+                    display_date=display_date.strip() or None,
+                    keyword=keyword.strip() or None,
+                    url_link=url_link.strip() or None
+                )
+                session.add(journal)
+                session.commit()
 
-            log = UploadLog(title=title.strip(), result="成功", reason="手動上傳")
-            session.add(log)
-            session.commit()
-        except Exception as e:
-            error = str(e)
+                log = UploadLog(title=title.strip(), result="成功", reason="手動上傳")
+                session.add(log)
+                session.commit()
+            except Exception:
+                error = translation["fail"]  # 兜底錯誤提示，避免顯示技術細節
 
     session.close()
 
     if error:
-        translation = translations.get(lang)
         return templates.TemplateResponse("manual_upload.html", {
             "request": request,
             "translation": translation,
             "error": error,
             "lang": lang
         })
-    return RedirectResponse(url=f"/manual_upload?lang={lang}&success=true",  status_code=302)
+
+    return RedirectResponse(url=f"/manual_upload?lang={lang}&success=true", status_code=302)
+
 
 
 # 使用HTTPBasic进行账户验证
