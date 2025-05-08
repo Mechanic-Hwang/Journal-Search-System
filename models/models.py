@@ -26,6 +26,11 @@ class Journal(Base):
     extra_field1 = Column(String, nullable=True)
     extra_field2 = Column(String, nullable=True)
     extra_field3 = Column(String, nullable=True)
+    
+    __table_args__ = (
+        UniqueConstraint("title", name="uq_title"),
+    )
+
 
 class UploadLog(Base):
     __tablename__ = "upload_logs"
