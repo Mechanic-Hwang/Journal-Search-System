@@ -29,7 +29,7 @@
 
 ```bash
 git clone https://github.com/Mechanic-Hwang/Journal-Search-System.git
-cd fastApiProject1
+cd Journal-Search-System
 pip install -r requirements.txt
 ```
 
