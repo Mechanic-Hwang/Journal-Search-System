@@ -8,7 +8,7 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
-        "query_error": "請輸入至少 4 個字的查詢條件",
+        "query_error": "請輸入至少 2 個字的查詢條件",
         # results page
         "no_results_found": "沒有找到任何結果",
         #    ================ upload
@@ -61,7 +61,7 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
-        "query_error": "Please enter at least 4 characters for the search query",
+        "query_error": "Please enter at least 2 characters for the search query",
         # results page
         "no_results_found": "No results found",
         #    ================ upload
@@ -114,7 +114,7 @@ translations = {
         "english": "English",
         "portuguese": "Português",
         "zh_mo": "繁体中文",
-        "query_error": "Por favor, insira pelo menos 4 caracteres para a consulta",
+        "query_error": "Por favor, insira pelo menos 2 caracteres para a consulta",
         # results page
         "no_results_found": "Nenhum resultado encontrado",
         #    ================ upload
