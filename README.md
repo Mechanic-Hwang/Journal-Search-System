@@ -84,6 +84,22 @@ uvicorn app.main:app --reload
 - `journals`：儲存期刊主資料
 - `upload_logs`：記錄每次上傳的詳細結果與錯誤原因
 
+## 🚀 FastAPI Windows 部署腳本
+
+此腳本會完成以下操作：
+1. 安裝 Git（如未安裝）
+2. 安裝 Python 3.13（如未安裝）
+3. 克隆 Git 倉庫
+4. 安裝虛擬環境與依賴
+5. 啟動 FastAPI 應用
+
+### 使用方式（需以系統管理員身份執行 PowerShell）：
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\deploy-fastapi.ps1
+
+
 ---
 
 ## 🤝 貢獻方式 (Contributing)
