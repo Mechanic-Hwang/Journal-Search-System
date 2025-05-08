@@ -28,7 +28,7 @@
 打開命令提示字元 (CMD)，執行以下命令：
 
 ```bash
-git clone https://github.com/Mechanic-Hwang/fastApiProject1.git
+git clone https://github.com/Mechanic-Hwang/Journal-Search-System.git
 cd fastApiProject1
 pip install -r requirements.txt
 ```
